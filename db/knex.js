@@ -1,7 +1,7 @@
 const knex = require('knex');
 const knexConfig = require('../knexfile');
 
-const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+const environment = ['production', 'test'].includes(process.env.NODE_ENV) ? process.env.NODE_ENV : 'development';
 const config = knexConfig[environment];
 
 if (environment === 'production' && !process.env.DATABASE_URL) {
