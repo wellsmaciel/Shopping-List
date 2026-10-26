@@ -8,49 +8,55 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Alata:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <title>Shopping List</title>
+    <title data-i18n="page.title">Shopping List</title>
   </head>
   <body>
     <main>
       <div class="header">
-        <h1>Shopping List App</h1>
-        <div class="theme-section">
-          <label for="theme-button" class="theme-button">Theme</label><br />
-          <button class="toggle-switch" id="theme-button">
-            <span class="toggle-ball"></span>
-          </button>
+        <h1 data-i18n="app.heading">Shopping List App</h1>
+        <div class="header-controls">
+          <div class="language-section">
+            <button id="language-button" class="language-button" data-i18n="lang.switch">Gaeilge</button>
+          </div>
+          <div class="theme-section">
+            <label for="theme-button" class="theme-button" data-i18n="theme.label">Theme</label><br />
+            <button class="toggle-switch" id="theme-button">
+              <span class="toggle-ball"></span>
+            </button>
+          </div>
         </div>
       </div>
       <form id="list-form">
         <div class="form-item-name">
-          <label for="item">Item:</label>
+          <label for="item" data-i18n="form.item">Item:</label>
           <input type="text" id="item" name="item" required />
         </div>
         <div class="form-item-type">
-          <label for="itemType">Type:</label>
+          <label for="itemType" data-i18n="form.type">Type:</label>
           <select id="itemType" name="itemType" required>
-            <option value="units">Units</option>
-            <option value="Liters">Liters</option>
-            <option value="Pack">Pack</option>
-            <option value="Bottles">Bottles</option>
-            <option value="Box">Box</option>
-            <option value="Bag">Bag</option>
-            <option value="Milliliters">Mls</option>
+            <option value="units" data-i18n="unit.units">Units</option>
+            <option value="Liters" data-i18n="unit.liters">Liters</option>
+            <option value="Pack" data-i18n="unit.pack">Pack</option>
+            <option value="Bottles" data-i18n="unit.bottles">Bottles</option>
+            <option value="Box" data-i18n="unit.box">Box</option>
+            <option value="Bag" data-i18n="unit.bag">Bag</option>
+            <option value="Milliliters" data-i18n="unit.milliliters">Mls</option>
           </select>
         </div>
         <div class="form-item-quantity">
-          <label for="quantity" min="1">Quantity:</label>
+          <label for="quantity" min="1" data-i18n="form.quantity">Quantity:</label>
           <input type="number" id="quantity" name="quantity" required step="1" />
         </div>
-        <button id="submit-btn" class="submit">Add to My List</button>
+        <button id="submit-btn" class="submit" data-i18n="button.add">Add to My List</button>
       </form>
       <section>
-        <h2>My List</h2>
+        <h2 data-i18n="list.heading">My List</h2>
         <div id="addedItems">
           <ul id="result"></ul>
         </div>
       </section>
     </main>
+    <script src="i18n.js"></script>
     <script src="main.js"></script>
   </body>
 </html>

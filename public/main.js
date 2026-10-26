@@ -14,12 +14,21 @@
   });
 }
 
+// Interface Language
+{
+  document.getElementById('language-button').addEventListener('click', function () {
+    i18n.toggle().catch((error) => console.error('Error:', error));
+  });
+  i18n.init();
+}
+
 // Clear List Button
 {
   const addedItems = document.getElementById('addedItems');
   const deleteListbtn = document.createElement('button');
   deleteListbtn.className = 'delete-list-button';
-  deleteListbtn.textContent = 'Clear List';
+  deleteListbtn.dataset.i18n = 'button.clear';
+  deleteListbtn.textContent = i18n.t('button.clear');
   addedItems.appendChild(deleteListbtn);
 
   deleteListbtn.addEventListener('click', function () {
@@ -37,7 +46,7 @@ document.getElementById('list-form').addEventListener('submit', function (event)
   const unit = document.getElementById('itemType').value;
 
   if (!shop_item || !unit || Number.isNaN(parseInt(qtd, 10)) || parseInt(qtd, 10) <= 0) {
-    alert('All fields are required and quantity must be a valid number(cannot be empty, zero or negative)');
+    alert(i18n.t('msg.fieldsRequired'));
     return;
   }
 
@@ -62,12 +71,12 @@ function createItem(itemData) {
     .then((response) => response.json())
     .then((data) => {
       console.log(data, 'Item added successfully');
-      alert('Item added successfully!');
+      alert(i18n.t('msg.added'));
       RenderGroceryList();
     })
     .catch((error) => {
       console.error('Error:', error);
-      alert('An error occurred while adding the item. Please try again.');
+      alert(i18n.t('msg.addError'));
     });
 }
 //Update existing item
@@ -86,7 +95,7 @@ function updateItem(id, updatedData) {
     })
     .catch((error) => {
       console.error('Error:', error);
-      alert('An error occurred while updating the item. Please try again.');
+      alert(i18n.t('msg.updateError'));
     });
 }
 //Delete item
@@ -97,12 +106,12 @@ function deleteItem(id) {
     .then((response) => response.json())
     .then((data) => {
       console.log(data, 'Item deleted successfully');
-      alert('Item deleted successfully!');
+      alert(i18n.t('msg.deleted'));
       RenderGroceryList();
     })
     .catch((error) => {
       console.error('Error:', error);
-      alert('An error occurred while deleting the item. Please try again.');
+      alert(i18n.t('msg.deleteError'));
     });
 }
 
@@ -114,12 +123,12 @@ function clearList() {
     .then((response) => response.json())
     .then((data) => {
       console.log(data, 'Grocery list cleared successfully');
-      alert('Grocery list cleared successfully!');
+      alert(i18n.t('msg.cleared'));
       RenderGroceryList();
     })
     .catch((error) => {
       console.error('Error:', error);
-      alert('An error occurred while deleting all items. Please try again.');
+      alert(i18n.t('msg.clearError'));
     });
 }
 
@@ -150,9 +159,11 @@ function RenderGroceryList() {
         groceryContainer.className = 'grocery-item';
         btnsContainer.className = 'buttons-container';
         updatebtn.className = 'update-button';
-        updatebtn.textContent = 'Update';
+        updatebtn.dataset.i18n = 'button.update';
+        updatebtn.textContent = i18n.t('button.update');
         deleteButton.className = 'delete-button';
-        deleteButton.textContent = 'Delete';
+        deleteButton.dataset.i18n = 'button.delete';
+        deleteButton.textContent = i18n.t('button.delete');
         itemDetailsContainer.className = 'item-details';
         itemtextContainer.className = 'item-text';
 
@@ -173,11 +184,11 @@ function RenderGroceryList() {
         });
 
         updatebtn.addEventListener('click', function () {
-          let newItem = prompt('Enter new item name:', item.item_name);
-          let newUnitType = prompt('Enter new unit type:', item.unit_type);
-          let newQuantity = parseInt(prompt('Enter new quantity:', item.quantity), 10);
+          let newItem = prompt(i18n.t('prompt.itemName'), item.item_name);
+          let newUnitType = prompt(i18n.t('prompt.unitType'), item.unit_type);
+          let newQuantity = parseInt(prompt(i18n.t('prompt.quantity'), item.quantity), 10);
           if (!newItem || !newUnitType || Number.isNaN(newQuantity) || newQuantity <= 0) {
-            alert('All fields are required and quantity must be a valid number(cannot be empty, zero or negative)');
+            alert(i18n.t('msg.fieldsRequired'));
           } else {
             const updatedData = {
               item_name: newItem,

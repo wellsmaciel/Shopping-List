@@ -20,6 +20,22 @@
   --primary-deletebtn-font-color: #2d3142;
 }
 
+/*header controls*/
+.header-controls {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 12px;
+}
+.language-button {
+  font-family: 'Alata', sans-serif;
+  border: 1px solid #000;
+  border-radius: 25px;
+  padding: 2px 10px;
+  color: var(--primary-button-text-color);
+  background-color: var(--primary-button-bg-color);
+}
+
 /*theme toggle button styles*/
 .theme-section {
   display: flex;
