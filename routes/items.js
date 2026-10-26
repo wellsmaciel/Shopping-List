@@ -45,15 +45,36 @@ items.post('/', async function (req, res) {
   res.status(201).json(rows[0]);
 });
 
+// Returns { id } for a valid path id, or { failure }. Ids above MAX_INT cannot exist, so they get { id: null }.
+function parseId(raw) {
+  if (!/^[1-9]\d*$/.test(raw)) {
+    return { failure: badRequest('invalid_id', 'id must be a positive integer') };
+  }
+  const id = Number(raw);
+  return { id: id > MAX_INT ? null : id };
+}
+
+function notFound(res) {
+  res.status(404).json({ error: 'Item not found', code: 'not_found' });
+}
+
+items.put('/:id', async function (req, res) {
+  const { id, failure: idFailure } = parseId(req.params.id);
+  if (idFailure) return sendFailure(res, idFailure);
+  const { value, failure } = validateItem(req.body);
+  if (failure) return sendFailure(res, failure);
+
+  const rows = id === null ? [] : await knex('items').where({ id }).update(value).returning(COLUMNS);
+  if (rows.length === 0) return notFound(res);
+  res.status(200).json(rows[0]);
+});
+
 items.delete('/:id', async function (req, res) {
-  if (!/^[1-9]\d*$/.test(req.params.id)) {
-    return sendFailure(res, badRequest('invalid_id', 'id must be a positive integer'));
-  }
-  const id = Number(req.params.id);
-  const deleted = id > MAX_INT ? 0 : await knex('items').where({ id }).del();
-  if (deleted === 0) {
-    return res.status(404).json({ error: 'Item not found', code: 'not_found' });
-  }
+  const { id, failure } = parseId(req.params.id);
+  if (failure) return sendFailure(res, failure);
+
+  const deleted = id === null ? 0 : await knex('items').where({ id }).del();
+  if (deleted === 0) return notFound(res);
   res.status(204).end();
 });
 

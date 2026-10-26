@@ -118,6 +118,65 @@ describe('GET /api/items', () => {
   });
 });
 
+describe('PUT /api/items/:id', () => {
+  const edit = (id, body) => request(app).put(`/api/items/${id}`).send(body);
+  const updated = { name: 'Oat milk', unit: 'bottles', quantity: 3 };
+
+  it('returns 200 with the full updated Item and stores it', async () => {
+    const created = (await add(milk)).body;
+    const res = await edit(created.id, updated);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ id: created.id, ...updated });
+    const list = (await request(app).get('/api/items')).body;
+    expect(list).toEqual([res.body]);
+  });
+
+  it('trims the name and leaves other Items alone', async () => {
+    const a = (await add({ ...milk, name: 'A' })).body;
+    const b = (await add({ ...milk, name: 'B' })).body;
+    const res = await edit(a.id, { ...updated, name: '  Tea  ' });
+    expect(res.body.name).toBe('Tea');
+    const list = (await request(app).get('/api/items')).body;
+    expect(list.find((item) => item.id === b.id)).toEqual(b);
+  });
+
+  it.each([
+    ['missing name', { unit: 'box', quantity: 1 }, 'invalid_name'],
+    ['blank name', { name: '   ', unit: 'box', quantity: 1 }, 'invalid_name'],
+    ['101-character name', { name: 'a'.repeat(101), unit: 'box', quantity: 1 }, 'invalid_name'],
+    ['zero quantity', { name: 'Milk', unit: 'box', quantity: 0 }, 'invalid_quantity'],
+    ['decimal quantity', { name: 'Milk', unit: 'box', quantity: 1.5 }, 'invalid_quantity'],
+    ['string quantity', { name: 'Milk', unit: 'box', quantity: '2' }, 'invalid_quantity'],
+    ['too large quantity', { name: 'Milk', unit: 'box', quantity: 3000000000 }, 'invalid_quantity'],
+    ['unknown unit', { name: 'Milk', unit: 'gallons', quantity: 1 }, 'invalid_unit'],
+    ['missing unit', { name: 'Milk', quantity: 1 }, 'invalid_unit'],
+  ])('rejects %s with %s and changes nothing', async (label, body, code) => {
+    const created = (await add(milk)).body;
+    const res = await edit(created.id, body);
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe(code);
+    expect((await request(app).get('/api/items')).body).toEqual([created]);
+  });
+
+  it('returns 404 not_found for an unknown id', async () => {
+    const res = await edit(999999, updated);
+    expect(res.status).toBe(404);
+    expect(res.body.code).toBe('not_found');
+  });
+
+  it('returns 404 not_found for a very large id', async () => {
+    const res = await edit('99999999999999', updated);
+    expect(res.status).toBe(404);
+    expect(res.body.code).toBe('not_found');
+  });
+
+  it.each(['abc', '0', '-1', '1.5', '1abc'])('returns 400 invalid_id for %s', async (id) => {
+    const res = await edit(id, updated);
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe('invalid_id');
+  });
+});
+
 describe('DELETE /api/items/:id', () => {
   it('returns 204 and removes only that Item', async () => {
     const a = (await add({ ...milk, name: 'A' })).body;

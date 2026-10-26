@@ -59,6 +59,49 @@ test('deletes a single Item immediately', async ({ page, request }) => {
   await expect(page.getByRole('listitem').filter({ hasText: 'Bread' })).toBeVisible();
 });
 
+test('edits an Item inline and saves it', async ({ page, request }) => {
+  await request.post('/api/items', { data: { name: 'Milk', unit: 'liters', quantity: 2 } });
+  await page.goto('/');
+
+  const row = page.getByRole('listitem').filter({ hasText: 'Milk' });
+  await row.getByRole('button', { name: 'Update', exact: true }).click();
+
+  await expect(page.getByLabel('Item name')).toHaveValue('Milk');
+  await expect(page.getByLabel('Quantity', { exact: true })).toHaveValue('2');
+  await expect(page.getByLabel('Unit', { exact: true })).toHaveValue('liters');
+
+  // An invalid save shows the error in the page and keeps the form open.
+  await page.getByLabel('Item name').fill('   ');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByTestId('message')).toHaveText('Enter an item name of 1 to 100 characters.');
+  await expect(page.getByLabel('Item name')).toBeVisible();
+
+  await page.getByLabel('Item name').fill('Oat milk');
+  await page.getByLabel('Quantity', { exact: true }).fill('5');
+  await page.getByLabel('Unit', { exact: true }).selectOption('bottles');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+
+  await expect(page.getByTestId('message')).toHaveText('Item updated.');
+  await expect(page.getByLabel('Item name')).toHaveCount(0);
+  await expect(page.getByRole('listitem').filter({ hasText: 'Oat milk' })).toContainText('5 - Bottles');
+  await expect(page.getByRole('listitem').filter({ hasText: /^Milk/ })).toHaveCount(0);
+});
+
+test('cancelling an edit restores the row unchanged', async ({ page, request }) => {
+  await request.post('/api/items', { data: { name: 'Milk', unit: 'liters', quantity: 2 } });
+  await page.goto('/');
+
+  await page.getByRole('button', { name: 'Update', exact: true }).click();
+  await page.getByLabel('Item name').fill('Changed');
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+
+  await expect(page.getByLabel('Item name')).toHaveCount(0);
+  const row = page.getByRole('listitem');
+  await expect(row).toContainText('Milk');
+  await expect(row).toContainText('2 - Liters');
+  await expect(row).not.toContainText('Changed');
+});
+
 test('Clear List: cancelling keeps the Items, confirming empties the list', async ({ page, request }) => {
   await request.post('/api/items', { data: { name: 'Milk', unit: 'liters', quantity: 2 } });
   await request.post('/api/items', { data: { name: 'Bread', unit: 'pack', quantity: 1 } });

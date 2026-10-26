@@ -15,6 +15,7 @@ async function expectIrish(page) {
   await expect(page.getByLabel(ga['form.quantity'])).toBeVisible();
   await expect(page.getByRole('button', { name: ga['button.add'] })).toBeVisible();
   await expect(page.getByRole('button', { name: ga['button.clear'] })).toBeVisible();
+  await expect(page.getByRole('button', { name: ga['button.update'] })).toBeVisible();
   await expect(page.getByRole('button', { name: ga['button.delete'] })).toBeVisible();
   await expect(page.getByRole('button', { name: ga['lang.switch'] })).toBeVisible();
   await expect(page).toHaveTitle(ga['page.title']);
@@ -45,5 +46,6 @@ test('switches the interface to Irish, keeps Item names, survives reload, and sw
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.getByRole('heading', { name: en['app.heading'] })).toBeVisible();
   await expect(page.getByRole('button', { name: en['button.add'] })).toBeVisible();
+  await expect(page.getByRole('button', { name: en['button.update'] })).toBeVisible();
   await expect(page.getByRole('button', { name: en['button.delete'] })).toBeVisible();
 });

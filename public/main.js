@@ -60,16 +60,23 @@ function reportError(error) {
 // Unit select, built from the server's list of Unit codes
 const unitSelect = document.getElementById('itemType');
 
-async function loadUnits() {
-  const units = await api('/api/units');
-  unitSelect.innerHTML = '';
-  units.forEach((code) => {
+let unitCodes = [];
+
+// Fills a select with one option per Unit code, labelled in the Interface Language.
+function fillUnitOptions(select) {
+  select.innerHTML = '';
+  unitCodes.forEach((code) => {
     const option = document.createElement('option');
     option.value = code;
     option.dataset.i18n = `unit.${code}`;
     option.textContent = i18n.t(`unit.${code}`);
-    unitSelect.appendChild(option);
+    select.appendChild(option);
   });
+}
+
+async function loadUnits() {
+  unitCodes = await api('/api/units');
+  fillUnitOptions(unitSelect);
 }
 
 // Clear List Button, with an in-page confirm step
@@ -124,6 +131,25 @@ async function createItem(itemData) {
   }
 }
 
+// Update item. Resolves true on success; on failure shows the error and resolves false.
+async function updateItem(id, itemData) {
+  try {
+    await api(`/api/items/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(itemData),
+    });
+  } catch (error) {
+    reportError(error);
+    return false;
+  }
+  showMessage('success.updated');
+  await renderGroceryList();
+  return true;
+}
+
 //Delete item
 async function deleteItem(id) {
   try {
@@ -146,6 +172,73 @@ async function clearList() {
   await renderGroceryList();
 }
 
+// Builds a labelled field for the inline edit form. The label is visually hidden.
+function editField(labelKey, control) {
+  const label = document.createElement('label');
+  label.className = 'visually-hidden';
+  label.dataset.i18n = labelKey;
+  label.textContent = i18n.t(labelKey);
+  control.id = `edit-${labelKey.split('.')[1]}`;
+  label.htmlFor = control.id;
+  const wrapper = document.createElement('div');
+  wrapper.appendChild(label);
+  wrapper.appendChild(control);
+  return wrapper;
+}
+
+function editButton(className, key, type) {
+  const button = document.createElement('button');
+  button.type = type;
+  button.className = className;
+  button.dataset.i18n = key;
+  button.textContent = i18n.t(key);
+  return button;
+}
+
+// Swaps an Item row for an inline form pre-filled with its values.
+// Only one row is editable at a time: opening another edit re-renders the list.
+async function startEdit(item) {
+  await renderGroceryList();
+  const row = document.querySelector(`#result li[data-id="${item.id}"]`);
+  if (!row) return;
+
+  const form = document.createElement('form');
+  form.className = 'edit-form';
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.value = item.name;
+  const quantityInput = document.createElement('input');
+  quantityInput.type = 'number';
+  quantityInput.step = '1';
+  quantityInput.value = item.quantity;
+  const unitInput = document.createElement('select');
+  fillUnitOptions(unitInput);
+  unitInput.value = item.unit;
+
+  form.appendChild(editField('edit.name', nameInput));
+  form.appendChild(editField('edit.quantity', quantityInput));
+  form.appendChild(editField('edit.unit', unitInput));
+  form.appendChild(editButton('update-button', 'button.save', 'submit'));
+  const cancelButton = editButton('delete-button', 'button.cancel', 'button');
+  form.appendChild(cancelButton);
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    updateItem(item.id, {
+      name: nameInput.value,
+      quantity: parseInt(quantityInput.value, 10),
+      unit: unitInput.value,
+    });
+  });
+  cancelButton.addEventListener('click', function () {
+    renderGroceryList();
+  });
+
+  row.innerHTML = '';
+  row.appendChild(form);
+  nameInput.focus();
+}
+
 // Fetch and render grocery list from the server
 async function renderGroceryList() {
   let data;
@@ -166,16 +259,21 @@ async function renderGroceryList() {
     const quantityText = document.createTextNode(`${item.quantity} - `);
     const unitLabel = document.createElement('span');
     const deleteButton = document.createElement('button');
+    const updateButton = document.createElement('button');
     const groceryContainer = document.createElement('div');
     const itemtextContainer = document.createElement('div');
     const itemDetailsContainer = document.createElement('div');
     const checkboxContainer = document.createElement('div');
     const btnsContainer = document.createElement('div');
 
+    listItem.dataset.id = item.id;
     checkbox.type = 'checkbox';
     checkboxContainer.className = 'checkbox-container';
     groceryContainer.className = 'grocery-item';
     btnsContainer.className = 'buttons-container';
+    updateButton.className = 'update-button';
+    updateButton.dataset.i18n = 'button.update';
+    updateButton.textContent = i18n.t('button.update');
     deleteButton.className = 'delete-button';
     deleteButton.dataset.i18n = 'button.delete';
     deleteButton.textContent = i18n.t('button.delete');
@@ -193,9 +291,13 @@ async function renderGroceryList() {
     itemDetailsContainer.appendChild(quantityText);
     itemDetailsContainer.appendChild(unitLabel);
     list.appendChild(listItem);
+    btnsContainer.appendChild(updateButton);
     btnsContainer.appendChild(deleteButton);
     listItem.appendChild(btnsContainer);
 
+    updateButton.addEventListener('click', function () {
+      startEdit(item);
+    });
     deleteButton.addEventListener('click', function () {
       deleteItem(item.id);
     });
