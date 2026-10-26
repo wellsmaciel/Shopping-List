@@ -62,3 +62,7 @@ typings/
 
 # local SQLite database
 db/dev.sqlite3
+
+# Playwright output
+test-results/
+playwright-report/
