@@ -1,20 +1,30 @@
 {
   "name": "projeto-shopping-list",
-  "version": "0.0.0",
+  "version": "0.5.0",
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
+    "dev": "node --watch ./bin/www",
     "migrate": "knex migrate:latest",
-    "seed": "knex seed:run"
+    "seed": "knex seed:run",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
-    "cookie-parser": "~1.4.4",
     "cors": "^2.8.6",
     "debug": "~2.6.9",
-    "express": "~4.16.1",
+    "express": "^5.3.0",
     "knex": "^3.1.0",
-    "morgan": "~1.9.1",
+    "morgan": "^1.12.1",
     "pg": "^8.20.0",
     "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "supertest": "^7.3.1",
+    "vitest": "^5.0.5"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

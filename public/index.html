@@ -3,54 +3,85 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Apply the saved (or operating system) theme before first paint.
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme');
+          var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.setAttribute('color-mode', dark ? 'dark' : 'light');
+        } catch (error) {}
+      })();
+    </script>
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Alata:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <title>Shopping List</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <title data-i18n="page.title">Shopping List</title>
   </head>
   <body>
     <main>
       <div class="header">
-        <h1>Shopping List App</h1>
-        <div class="theme-section">
-          <label for="theme-button" class="theme-button">Theme</label><br />
-          <button class="toggle-switch" id="theme-button">
-            <span class="toggle-ball"></span>
-          </button>
+        <h1 data-i18n="app.heading">Shopping List</h1>
+        <div class="header-controls">
+          <div class="language-section">
+            <button id="language-button" class="language-button" data-i18n="lang.switch">Gaeilge</button>
+          </div>
+          <div class="theme-section">
+            <label for="theme-button" class="theme-button" data-i18n="theme.label">Theme</label>
+            <button class="toggle-switch" id="theme-button" aria-pressed="false">
+              <span class="toggle-ball"></span>
+            </button>
+          </div>
         </div>
       </div>
       <form id="list-form">
         <div class="form-item-name">
-          <label for="item">Item:</label>
+          <label for="item" data-i18n="form.item">Item:</label>
           <input type="text" id="item" name="item" required />
         </div>
         <div class="form-item-type">
-          <label for="itemType">Type:</label>
-          <select id="itemType" name="itemType" required>
-            <option value="units">Units</option>
-            <option value="Liters">Liters</option>
-            <option value="Pack">Pack</option>
-            <option value="Bottles">Bottles</option>
-            <option value="Box">Box</option>
-            <option value="Bag">Bag</option>
-            <option value="Milliliters">Mls</option>
-          </select>
+          <label for="itemType" data-i18n="form.unit">Unit:</label>
+          <select id="itemType" name="itemType" required></select>
         </div>
         <div class="form-item-quantity">
-          <label for="quantity" min="1">Quantity:</label>
+          <label for="quantity" min="1" data-i18n="form.quantity">Quantity:</label>
           <input type="number" id="quantity" name="quantity" required step="1" />
         </div>
-        <button id="submit-btn" class="submit">Add to My List</button>
+        <button id="submit-btn" class="submit" data-i18n="button.add">Add to My List</button>
       </form>
+      <p id="message" data-testid="message" aria-live="polite"></p>
       <section>
-        <h2>My List</h2>
+        <h2 data-i18n="list.heading">My List</h2>
         <div id="addedItems">
           <ul id="result"></ul>
+          <div id="clear-controls">
+            <button type="button" id="clear-btn" class="delete-list-button" data-i18n="button.clear">Clear List</button>
+            <div id="clear-confirm" data-testid="clear-confirm" hidden>
+              <span data-i18n="clear.confirmPrompt">Remove every item from your list?</span>
+              <button type="button" id="clear-confirm-btn" class="delete-list-button" data-i18n="button.confirmClear">
+                Yes, clear it
+              </button>
+              <button type="button" id="clear-cancel-btn" class="delete-list-button" data-i18n="button.cancel">
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       </section>
     </main>
+    <footer>
+      <span data-i18n="footer.appName">Shopping List</span> &mdash;
+      <span data-i18n="footer.createdBy">Created by</span> Wells Maciel &middot;
+      <span id="app-version"></span> &middot;
+      <a href="https://www.linkedin.com/in/wells-velasquez-maciel/" target="_blank" rel="noopener">LinkedIn</a> &middot;
+      <a href="https://github.com/wellsmaciel/Shopping-List" target="_blank" rel="noopener">GitHub</a>
+    </footer>
+    <script src="i18n.js"></script>
     <script src="main.js"></script>
   </body>
 </html>
