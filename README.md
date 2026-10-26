@@ -4,7 +4,7 @@ A single shared list of things to buy at the supermarket. Add **Items** (a name,
 
 Stack: Node 24, Express 5, Knex (SQLite in development, Postgres in production), plain HTML/CSS/JS.
 
-Live app: _Railway URL to be added after the first deploy_
+Live app: https://shopping-list-production-6a17.up.railway.app
 
 ## Local setup
 
@@ -97,7 +97,7 @@ Errors always have the body `{ "error": "<message for developers>", "code": "<co
 
 ## Deploying to Railway
 
-Migrations run automatically on every deploy: `railway.json` sets `deploy.preDeployCommand` to `npm run migrate` and `startCommand` to `npm start`. Railway sets `PORT` itself.
+Migrations run automatically on every deploy through the pre-deploy command `npm run migrate`; the app starts with `npm start`. Both are in `railway.json`. Railway sets `PORT` itself.
 
 1. Create a new Railway project.
 2. Add a **PostgreSQL** database to the project.
@@ -106,7 +106,7 @@ Migrations run automatically on every deploy: `railway.json` sets `deploy.preDep
    - `NODE_ENV=production`
    - `DATABASE_URL=${{Postgres.DATABASE_URL}}` (a reference variable; replace `Postgres` with the database service's name if different)
    - `DATABASE_SSL` is not needed: the service reaches Postgres over Railway's private network. Set it to `true` only if you connect through a public URL that requires SSL.
-5. In the service **Settings**, confirm the pre-deploy command is `npm run migrate` and the start command is `npm start` (shown as coming from `railway.json`).
+5. In the service **Settings > Deploy**, check the **Pre-deploy Command**. Railway may not pick it up from `railway.json`; if the field is empty, set it to `npm run migrate`. Without it the database has no tables and `/api/items` returns 500 (`relation "items" does not exist`). The start command should be `npm start`.
 6. In the service **Settings**, enable **Wait for CI**, so that deploys from `main` only start after the GitHub Actions checks pass. The toggle only appears once you have accepted Railway's updated GitHub permissions (Railway shows a banner for this). It also requires the workflow to have a `push` trigger on `main`, which `ci.yml` already has.
 7. In **Settings > Networking**, click **Generate Domain**, then put the URL at the top of this README.
 
