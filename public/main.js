@@ -1,17 +1,35 @@
-// Theme Toggle
+// Theme Toggle. The inline script in index.html applies the saved theme early;
+// this keeps the button and the saved choice in step.
 {
   const themeButton = document.getElementById('theme-button');
   const htmlFile = document.documentElement;
 
-  themeButton.addEventListener('click', function () {
-    let currentTheme = htmlFile.getAttribute('color-mode');
+  function showTheme() {
+    themeButton.setAttribute('aria-pressed', String(htmlFile.getAttribute('color-mode') === 'dark'));
+  }
 
-    if (currentTheme === 'light') {
-      htmlFile.setAttribute('color-mode', 'dark');
-    } else {
-      htmlFile.setAttribute('color-mode', 'light');
+  themeButton.addEventListener('click', function () {
+    const next = htmlFile.getAttribute('color-mode') === 'dark' ? 'light' : 'dark';
+    htmlFile.setAttribute('color-mode', next);
+    try {
+      localStorage.setItem('theme', next);
+    } catch (error) {
+      // Storage unavailable: the choice just is not remembered.
     }
+    showTheme();
   });
+  showTheme();
+}
+
+// Footer version: v + major.minor from the API
+async function showVersion() {
+  try {
+    const { version } = await api('/api/version');
+    const [major, minor] = version.split('.');
+    document.getElementById('app-version').textContent = `v${major}.${minor}`;
+  } catch (error) {
+    // The footer simply omits the version.
+  }
 }
 
 // Interface Language
@@ -345,4 +363,5 @@ async function renderGroceryList() {
     reportError(error);
   }
   await renderGroceryList();
+  showVersion();
 })();

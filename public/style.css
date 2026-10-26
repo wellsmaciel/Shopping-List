@@ -244,3 +244,14 @@ label {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/*Footer*/
+
+footer {
+  text-align: center;
+  padding: 1em;
+  color: var(--primary-paragraph-color);
+}
+footer a {
+  color: inherit;
+}

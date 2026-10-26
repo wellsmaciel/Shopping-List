@@ -2,6 +2,8 @@
   "page.title": "Shopping List",
   "app.heading": "Shopping List App",
   "theme.label": "Theme",
+  "footer.appName": "Shopping List",
+  "footer.createdBy": "Created by",
   "lang.switch": "Gaeilge",
   "form.item": "Item:",
   "form.unit": "Unit:",

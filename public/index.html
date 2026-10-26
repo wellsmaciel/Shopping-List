@@ -3,6 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Apply the saved (or operating system) theme before first paint.
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme');
+          var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.setAttribute('color-mode', dark ? 'dark' : 'light');
+        } catch (error) {}
+      })();
+    </script>
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,7 +30,7 @@
           </div>
           <div class="theme-section">
             <label for="theme-button" class="theme-button" data-i18n="theme.label">Theme</label><br />
-            <button class="toggle-switch" id="theme-button">
+            <button class="toggle-switch" id="theme-button" aria-pressed="false">
               <span class="toggle-ball"></span>
             </button>
           </div>
@@ -61,6 +71,13 @@
         </div>
       </section>
     </main>
+    <footer>
+      <span data-i18n="footer.appName">Shopping List</span> &mdash;
+      <span data-i18n="footer.createdBy">Created by</span> Wells Maciel &middot;
+      <span id="app-version"></span> &middot;
+      <a href="https://www.linkedin.com/in/wells-velasquez-maciel/" target="_blank" rel="noopener">LinkedIn</a> &middot;
+      <a href="https://github.com/wellsmaciel/Shopping-List" target="_blank" rel="noopener">GitHub</a>
+    </footer>
     <script src="i18n.js"></script>
     <script src="main.js"></script>
   </body>

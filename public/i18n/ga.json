@@ -2,6 +2,8 @@
   "page.title": "Liosta Siopadóireachta",
   "app.heading": "Aip Liosta Siopadóireachta",
   "theme.label": "Téama",
+  "footer.appName": "Liosta Siopadóireachta",
+  "footer.createdBy": "Cruthaithe ag",
   "lang.switch": "English",
   "form.item": "Earra:",
   "form.unit": "Aonad:",
