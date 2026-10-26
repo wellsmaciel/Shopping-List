@@ -254,7 +254,7 @@ async function startEdit(item) {
   form.appendChild(editField('edit.quantity', quantityInput));
   form.appendChild(editField('edit.unit', unitInput));
   form.appendChild(editButton('update-button', 'button.save', 'submit'));
-  const cancelButton = editButton('delete-button', 'button.cancel', 'button');
+  const cancelButton = editButton('cancel-button', 'button.cancel', 'button');
   form.appendChild(cancelButton);
 
   form.addEventListener('submit', function (event) {
