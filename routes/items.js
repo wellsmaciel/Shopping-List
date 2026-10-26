@@ -5,7 +5,7 @@ const knex = require('../db/knex');
 const { UNITS } = require('../lib/units');
 
 const MAX_INT = 2147483647; // largest value of a Postgres integer column
-const COLUMNS = ['id', 'name', 'unit', 'quantity'];
+const COLUMNS = ['id', 'name', 'unit', 'quantity', 'in_cart'];
 
 function badRequest(code, error) {
   return { status: 400, code, error };
@@ -27,13 +27,21 @@ function validateItem(body) {
   return { value: { name: name.trim(), unit, quantity } };
 }
 
+// SQLite returns 0/1 for booleans and Postgres true/false: always send a real boolean.
+function toItem(row) {
+  return { ...row, in_cart: Boolean(row.in_cart) };
+}
+
 function sendFailure(res, failure) {
   res.status(failure.status).json({ error: failure.error, code: failure.code });
 }
 
 items.get('/', async function (req, res) {
-  const rows = await knex('items').select(COLUMNS).orderBy('id', 'asc');
-  res.status(200).json(rows);
+  const rows = await knex('items').select(COLUMNS).orderBy([
+    { column: 'in_cart', order: 'asc' },
+    { column: 'id', order: 'asc' },
+  ]);
+  res.status(200).json(rows.map(toItem));
 });
 
 items.post('/', async function (req, res) {
@@ -42,7 +50,7 @@ items.post('/', async function (req, res) {
 
   // returning() makes Postgres hand back the real id (SQLite supports it too).
   const rows = await knex('items').insert(value).returning(COLUMNS);
-  res.status(201).json(rows[0]);
+  res.status(201).json(toItem(rows[0]));
 });
 
 // Returns { id } for a valid path id, or { failure }. Ids above MAX_INT cannot exist, so they get { id: null }.
@@ -66,7 +74,20 @@ items.put('/:id', async function (req, res) {
 
   const rows = id === null ? [] : await knex('items').where({ id }).update(value).returning(COLUMNS);
   if (rows.length === 0) return notFound(res);
-  res.status(200).json(rows[0]);
+  res.status(200).json(toItem(rows[0]));
+});
+
+items.patch('/:id', async function (req, res) {
+  const { id, failure: idFailure } = parseId(req.params.id);
+  if (idFailure) return sendFailure(res, idFailure);
+  const { in_cart } = req.body || {};
+  if (typeof in_cart !== 'boolean') {
+    return sendFailure(res, badRequest('invalid_in_cart', 'in_cart must be true or false'));
+  }
+
+  const rows = id === null ? [] : await knex('items').where({ id }).update({ in_cart }).returning(COLUMNS);
+  if (rows.length === 0) return notFound(res);
+  res.status(200).json(toItem(rows[0]));
 });
 
 items.delete('/:id', async function (req, res) {

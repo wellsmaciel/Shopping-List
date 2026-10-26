@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 const { UNITS } = createRequire(import.meta.url)('../lib/units');
 
 // Every `code` the API can put in an error body (plus one for network failures).
-const ERROR_CODES = ['invalid_name', 'invalid_quantity', 'invalid_unit', 'invalid_id', 'invalid_json', 'not_found', 'server_error'];
+const ERROR_CODES = ['invalid_name', 'invalid_quantity', 'invalid_unit', 'invalid_id', 'invalid_in_cart', 'invalid_json', 'not_found', 'server_error'];
 
 const load = (language) =>
   JSON.parse(readFileSync(new URL(`../public/i18n/${language}.json`, import.meta.url), 'utf8'));

@@ -150,6 +150,23 @@ async function updateItem(id, itemData) {
   return true;
 }
 
+// Set or clear In Cart. Always re-renders so the list shows the API's order
+// (and a failed change reverts the checkbox).
+async function setInCart(id, inCart) {
+  try {
+    await api(`/api/items/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ in_cart: inCart }),
+    });
+  } catch (error) {
+    reportError(error);
+  }
+  await renderGroceryList();
+}
+
 //Delete item
 async function deleteItem(id) {
   try {
@@ -266,8 +283,19 @@ async function renderGroceryList() {
     const checkboxContainer = document.createElement('div');
     const btnsContainer = document.createElement('div');
 
+    const checkboxLabelText = document.createElement('span');
+
     listItem.dataset.id = item.id;
+    listItem.dataset.inCart = item.in_cart;
     checkbox.type = 'checkbox';
+    checkbox.checked = item.in_cart;
+    checkboxLabelText.className = 'visually-hidden';
+    checkboxLabelText.dataset.i18n = 'item.inCart';
+    checkboxLabelText.textContent = i18n.t('item.inCart');
+    // Accessible name: "In cart:" (translated) followed by the visible Item name.
+    checkboxLabelText.id = `in-cart-label-${item.id}`;
+    itemtextContainer.id = `item-name-${item.id}`;
+    checkbox.setAttribute('aria-labelledby', `${checkboxLabelText.id} ${itemtextContainer.id}`);
     checkboxContainer.className = 'checkbox-container';
     groceryContainer.className = 'grocery-item';
     btnsContainer.className = 'buttons-container';
@@ -283,6 +311,7 @@ async function renderGroceryList() {
     itemtextContainer.className = 'item-text';
 
     checkboxContainer.appendChild(checkbox);
+    checkboxContainer.appendChild(checkboxLabelText);
     listItem.appendChild(checkboxContainer);
     groceryContainer.appendChild(itemtextContainer);
     groceryContainer.appendChild(itemDetailsContainer);
@@ -295,6 +324,9 @@ async function renderGroceryList() {
     btnsContainer.appendChild(deleteButton);
     listItem.appendChild(btnsContainer);
 
+    checkbox.addEventListener('change', function () {
+      setInCart(item.id, checkbox.checked);
+    });
     updateButton.addEventListener('click', function () {
       startEdit(item);
     });

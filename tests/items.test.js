@@ -24,7 +24,7 @@ describe('POST /api/items', () => {
   it('returns 201 with the full Item and a real id', async () => {
     const res = await add(milk);
     expect(res.status).toBe(201);
-    expect(res.body).toEqual({ id: expect.any(Number), ...milk });
+    expect(res.body).toEqual({ id: expect.any(Number), ...milk, in_cart: false });
     expect(res.body.id).toBeGreaterThan(0);
   });
 
@@ -126,9 +126,17 @@ describe('PUT /api/items/:id', () => {
     const created = (await add(milk)).body;
     const res = await edit(created.id, updated);
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ id: created.id, ...updated });
+    expect(res.body).toEqual({ id: created.id, ...updated, in_cart: false });
     const list = (await request(app).get('/api/items')).body;
     expect(list).toEqual([res.body]);
+  });
+
+  it('leaves in_cart unchanged', async () => {
+    const created = (await add(milk)).body;
+    await request(app).patch(`/api/items/${created.id}`).send({ in_cart: true });
+    const res = await edit(created.id, updated);
+    expect(res.status).toBe(200);
+    expect(res.body.in_cart).toBe(true);
   });
 
   it('trims the name and leaves other Items alone', async () => {
@@ -172,6 +180,68 @@ describe('PUT /api/items/:id', () => {
 
   it.each(['abc', '0', '-1', '1.5', '1abc'])('returns 400 invalid_id for %s', async (id) => {
     const res = await edit(id, updated);
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe('invalid_id');
+  });
+});
+
+describe('PATCH /api/items/:id', () => {
+  const patch = (id, body) => request(app).patch(`/api/items/${id}`).send(body);
+  const ids = async () => (await request(app).get('/api/items')).body.map((item) => item.id);
+
+  it('sets in_cart to true and back to false, returning the full Item', async () => {
+    const created = (await add(milk)).body;
+    const ticked = await patch(created.id, { in_cart: true });
+    expect(ticked.status).toBe(200);
+    expect(ticked.body).toEqual({ ...created, in_cart: true });
+    const unticked = await patch(created.id, { in_cart: false });
+    expect(unticked.status).toBe(200);
+    expect(unticked.body).toEqual({ ...created, in_cart: false });
+  });
+
+  it('orders Items not In Cart first, then In Cart, each by id', async () => {
+    const a = (await add({ ...milk, name: 'A' })).body;
+    const b = (await add({ ...milk, name: 'B' })).body;
+    const c = (await add({ ...milk, name: 'C' })).body;
+    const d = (await add({ ...milk, name: 'D' })).body;
+
+    await patch(b.id, { in_cart: true });
+    expect(await ids()).toEqual([a.id, c.id, d.id, b.id]);
+    await patch(a.id, { in_cart: true });
+    expect(await ids()).toEqual([c.id, d.id, a.id, b.id]);
+    await patch(b.id, { in_cart: false });
+    expect(await ids()).toEqual([b.id, c.id, d.id, a.id]);
+    await patch(a.id, { in_cart: false });
+    expect(await ids()).toEqual([a.id, b.id, c.id, d.id]);
+  });
+
+  it.each([
+    ['missing', {}],
+    ['a string', { in_cart: 'true' }],
+    ['a number', { in_cart: 1 }],
+    ['null', { in_cart: null }],
+  ])('rejects in_cart that is %s with invalid_in_cart and changes nothing', async (label, body) => {
+    const created = (await add(milk)).body;
+    const res = await patch(created.id, body);
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe('invalid_in_cart');
+    expect((await request(app).get('/api/items')).body).toEqual([created]);
+  });
+
+  it('returns 404 not_found for an unknown id', async () => {
+    const res = await patch(999999, { in_cart: true });
+    expect(res.status).toBe(404);
+    expect(res.body.code).toBe('not_found');
+  });
+
+  it('returns 404 not_found for a very large id', async () => {
+    const res = await patch('99999999999999', { in_cart: true });
+    expect(res.status).toBe(404);
+    expect(res.body.code).toBe('not_found');
+  });
+
+  it.each(['abc', '0', '-1', '1.5', '1abc'])('returns 400 invalid_id for %s', async (id) => {
+    const res = await patch(id, { in_cart: true });
     expect(res.status).toBe(400);
     expect(res.body.code).toBe('invalid_id');
   });

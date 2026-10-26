@@ -128,3 +128,28 @@ test('messages and Unit labels follow the Interface Language', async ({ page, re
   await expect(page.getByTestId('message')).toHaveText('Cuir isteach ainm earra idir 1 agus 100 carachtar.');
   await expect(page.getByRole('listitem').filter({ hasText: 'Rice' })).toContainText('2 - Cileagram');
 });
+
+test('ticking an Item moves it to the bottom, survives a reload, and unticking restores it', async ({ page, request }) => {
+  for (const name of ['Milk', 'Bread', 'Eggs']) {
+    await request.post('/api/items', { data: { name, unit: 'box', quantity: 1 } });
+  }
+  await page.goto('/');
+  const rows = page.getByRole('listitem');
+  await expect(rows).toHaveCount(3);
+  await expect(rows.nth(0)).toContainText('Milk');
+
+  await page.getByRole('checkbox', { name: 'In cart: Milk' }).check();
+  await expect(rows.nth(2)).toContainText('Milk');
+  await expect(rows.nth(0)).toContainText('Bread');
+  await expect(rows.nth(2)).toHaveAttribute('data-in-cart', 'true');
+  await expect(page.getByRole('checkbox', { name: 'In cart: Milk' })).toBeChecked();
+
+  await page.reload();
+  await expect(rows.nth(2)).toContainText('Milk');
+  await expect(page.getByRole('checkbox', { name: 'In cart: Milk' })).toBeChecked();
+
+  await page.getByRole('checkbox', { name: 'In cart: Milk' }).uncheck();
+  await expect(rows.nth(0)).toContainText('Milk');
+  await expect(rows.nth(0)).toHaveAttribute('data-in-cart', 'false');
+  await expect(page.getByRole('checkbox', { name: 'In cart: Milk' })).not.toBeChecked();
+});
