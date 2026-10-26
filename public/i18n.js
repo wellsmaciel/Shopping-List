@@ -42,6 +42,9 @@ const i18n = (() => {
 
   async function setLanguage(language) {
     const response = await fetch(`/i18n/${language}.json`);
+    if (!response.ok) {
+      throw new Error(`Could not load language file (${response.status})`);
+    }
     dictionary = await response.json();
     current = language;
     document.documentElement.lang = language;

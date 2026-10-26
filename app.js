@@ -3,7 +3,8 @@ var path = require('path');
 var logger = require('morgan');
 const cors = require('cors');
 
-const apiShoplistv2 = require('./routes/apiShoplistv2');
+const items = require('./routes/items');
+const { UNITS } = require('./lib/units');
 const { version } = require('./package.json');
 
 var app = express();
@@ -21,7 +22,11 @@ app.get('/api/version', function (req, res) {
   res.status(200).json({ version });
 });
 
-app.use('/api/v2', apiShoplistv2);
+app.get('/api/units', function (req, res) {
+  res.status(200).json(UNITS);
+});
+
+app.use('/api/items', items);
 
 // Unknown /api routes
 app.use('/api', function (req, res) {

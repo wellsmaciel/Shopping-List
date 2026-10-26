@@ -22,20 +22,12 @@ describe('JSON error handler', () => {
 
   it('returns 400 invalid_json for a malformed JSON body', async () => {
     const res = await request(app)
-      .post('/api/v2/shopping_list')
+      .post('/api/items')
       .set('Content-Type', 'application/json')
-      .send('{"item_name": ');
+      .send('{"name": ');
     expect(res.status).toBe(400);
     expect(res.body.code).toBe('invalid_json');
     expect(typeof res.body.error).toBe('string');
-  });
-});
-
-describe('existing v2 API', () => {
-  it('lists items', async () => {
-    const res = await request(app).get('/api/v2/shopping_list');
-    expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
   });
 });
 

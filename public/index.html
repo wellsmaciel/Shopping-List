@@ -32,16 +32,8 @@
           <input type="text" id="item" name="item" required />
         </div>
         <div class="form-item-type">
-          <label for="itemType" data-i18n="form.type">Type:</label>
-          <select id="itemType" name="itemType" required>
-            <option value="units" data-i18n="unit.units">Units</option>
-            <option value="Liters" data-i18n="unit.liters">Liters</option>
-            <option value="Pack" data-i18n="unit.pack">Pack</option>
-            <option value="Bottles" data-i18n="unit.bottles">Bottles</option>
-            <option value="Box" data-i18n="unit.box">Box</option>
-            <option value="Bag" data-i18n="unit.bag">Bag</option>
-            <option value="Milliliters" data-i18n="unit.milliliters">Mls</option>
-          </select>
+          <label for="itemType" data-i18n="form.unit">Unit:</label>
+          <select id="itemType" name="itemType" required></select>
         </div>
         <div class="form-item-quantity">
           <label for="quantity" min="1" data-i18n="form.quantity">Quantity:</label>
@@ -49,10 +41,23 @@
         </div>
         <button id="submit-btn" class="submit" data-i18n="button.add">Add to My List</button>
       </form>
+      <p id="message" data-testid="message" aria-live="polite"></p>
       <section>
         <h2 data-i18n="list.heading">My List</h2>
         <div id="addedItems">
           <ul id="result"></ul>
+          <div id="clear-controls">
+            <button type="button" id="clear-btn" class="delete-list-button" data-i18n="button.clear">Clear List</button>
+            <div id="clear-confirm" data-testid="clear-confirm" hidden>
+              <span data-i18n="clear.confirmPrompt">Remove every item from your list?</span>
+              <button type="button" id="clear-confirm-btn" class="delete-list-button" data-i18n="button.confirmClear">
+                Yes, clear it
+              </button>
+              <button type="button" id="clear-cancel-btn" class="delete-list-button" data-i18n="button.cancel">
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       </section>
     </main>

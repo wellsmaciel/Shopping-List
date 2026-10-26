@@ -15,7 +15,6 @@ async function expectIrish(page) {
   await expect(page.getByLabel(ga['form.quantity'])).toBeVisible();
   await expect(page.getByRole('button', { name: ga['button.add'] })).toBeVisible();
   await expect(page.getByRole('button', { name: ga['button.clear'] })).toBeVisible();
-  await expect(page.getByRole('button', { name: ga['button.update'] })).toBeVisible();
   await expect(page.getByRole('button', { name: ga['button.delete'] })).toBeVisible();
   await expect(page.getByRole('button', { name: ga['lang.switch'] })).toBeVisible();
   await expect(page).toHaveTitle(ga['page.title']);
@@ -25,8 +24,8 @@ test('switches the interface to Irish, keeps Item names, survives reload, and sw
   page,
   request,
 }) => {
-  const res = await request.post('/api/v2/shopping_list', {
-    data: { item_name: 'Milk', quantity: 2, unit_type: 'Liters' },
+  const res = await request.post('/api/items', {
+    data: { name: 'Milk', quantity: 2, unit: 'liters' },
   });
   expect(res.ok()).toBeTruthy();
 
